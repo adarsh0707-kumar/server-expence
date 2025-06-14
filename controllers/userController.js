@@ -167,3 +167,44 @@ export const changePassword = async (req, res) => {
     });
   }
 }
+
+
+// 
+// export const getAllUser = async (req, res) => {
+//   try {
+// 
+//     // Logic to fetch user data
+//     
+//     // const { userId } = req.body.user;
+// 
+//     const Alluser = await pool.query({
+//       text: `SELECT * FROM tbluser`,
+//       values: []
+//     });
+// 
+//     const user = Alluser.rows;
+// 
+//     if (!user) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "User not found",
+//       });
+//     }
+// 
+//     user.password = undefined; // Remove password from response
+// 
+//     res.status(201).json({
+//       status: "success",
+//       message: "User fetched successfully",
+//       data: user,
+//     });
+//     
+//   }
+//   catch (err) {
+//     console.error(err);
+//     res.status(500).json({
+//       status: "failed",
+//       message: err.message || "Internal Server Error",
+//     });
+//   }
+// }

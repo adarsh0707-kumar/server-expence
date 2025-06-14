@@ -9,7 +9,7 @@ import { comparePassword, createJWT, hashPassword } from "../libs/index.js";
 export const signupUser = async (req, res) => {
   try {
     
-    const { firstName, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
     // Validate input
 
     if (!firstName || !email || !password) {
@@ -40,8 +40,8 @@ export const signupUser = async (req, res) => {
     // Insert new user into the database
 
     const user = await pool.query({
-      text: `INSERT INTO tbluser (firstname, email, password) VALUES ($1, $2, $3) RETURNING *`,
-      values: [firstName, email, hashedPassword],
+      text: `INSERT INTO tbluser (firstname,lastname, email, password) VALUES ($1, $2, $3, $4) RETURNING *`,
+      values: [firstName,lastName, email, hashedPassword],
     });
 
     user.rows[0].password = undefined; // Remove password from response
