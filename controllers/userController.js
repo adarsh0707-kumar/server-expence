@@ -52,6 +52,13 @@ export const updateUser = async (req, res) => {
     const { userId } = req.body.user;
     const { firstName, lastName, country, currency, contact } = req.body;
 
+    if (!userId) {
+      return res.status(400).json({
+        status: "failed",
+        message: "User ID is missing from request",
+      });
+    }
+    
     // Validate required fields
     if (!firstName) {
       return res.status(400).json({
@@ -64,6 +71,7 @@ export const updateUser = async (req, res) => {
       text: `SELECT * FROM tbluser WHERE id = $1`,
       values: [userId]
     });
+
 
     const user = userExists.rows[0];
     if (!user) {

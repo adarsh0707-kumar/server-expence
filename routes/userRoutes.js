@@ -9,7 +9,7 @@ const router = express.Router()
 
 router.get('/', authMiddleware, getUser)
 // router.get('/alluser', authMiddleware, getAllUser)
-router.put('/update-user', authMiddleware, updateUser)
+router.put('/update-user/:id', authMiddleware, updateUser)
 router.put('/change-password', authMiddleware, changePassword)
 
 export default router
