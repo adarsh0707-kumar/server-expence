@@ -95,6 +95,47 @@ export const getDashboardInformation = async (req, res) => {
     const availableBalance = totalIncome - totalExpense;
 
     // Aggregate transactions to sum by type and group by month
+       // Get current month's daily data
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+    
+    const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+    
+    const dailyResult = await pool.query({
+      text: `
+        SELECT 
+          EXTRACT(DAY FROM created_at) AS day,
+          type, 
+          SUM(amount) AS totalAmount
+        FROM tbltransaction
+        WHERE user_id = $1
+          AND EXTRACT(MONTH FROM created_at) = $2
+          AND EXTRACT(YEAR FROM created_at) = $3
+        GROUP BY EXTRACT(DAY FROM created_at), type
+        ORDER BY day ASC
+      `,
+      values: [userId, currentMonth, currentYear]
+    });
+
+    // Initialize daily data array with all days of month
+    const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const dayData = dailyResult.rows.filter(item => parseInt(item.day) === day);
+      
+      const incomeEntry = dayData.find(item => item.type === 'income');
+      const expenseEntry = dayData.find(item => item.type === 'expense');
+      
+      return {
+        day: day.toString(),
+        income: incomeEntry ? parseFloat(incomeEntry.totalamount) : 0,
+        expense: expenseEntry ? parseFloat(expenseEntry.totalamount) : 0
+      };
+    });
+
+
+
+
 
     const year = new Date().getFullYear();
 
@@ -104,35 +145,54 @@ export const getDashboardInformation = async (req, res) => {
 
     const result = await pool.query({
       text: `
+        WITH months AS (
+          SELECT 
+            generate_series(
+              DATE_TRUNC('year', CURRENT_DATE),
+              DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '11 months',
+              INTERVAL '1 month'
+            ) AS month
+        )
         SELECT 
-          EXTRACT(MONTH FROM created_at) AS month, 
-          type, 
-          SUM(amount) AS totalAmount
-        FROM
-          tbltransaction
-        WHERE
-          user_id = $1
-          AND created_at BETWEEN $2 AND $3
-        GROUP BY
-          EXTRACT(MONTH FROM created_at), type`,
+          TO_CHAR(m.month, 'Mon') AS label,
+          EXTRACT(MONTH FROM m.month)::integer AS month_num,
+          COALESCE(
+            (SELECT SUM(amount) 
+             FROM tbltransaction 
+             WHERE user_id = $1 
+               AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM m.month)
+               AND type = 'income'
+               AND created_at BETWEEN $2 AND $3
+            ), 0) AS income,
+          COALESCE(
+            (SELECT SUM(amount) 
+             FROM tbltransaction 
+             WHERE user_id = $1 
+               AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM m.month)
+               AND type = 'expense'
+               AND created_at BETWEEN $2 AND $3
+            ), 0) AS expense
+        FROM months m
+        ORDER BY month_num`,
       values: [userId, start_Date, end_Date],
     })
 
+    
     // organize the data by month and type
-
-    const data = new Array(12).fill().map((_, index) => {
-      const monthNum = index + 1;
-      const monthData = result.rows.filter(item => parseInt(item.month) === monthNum);
-
-      const incomeEntry = monthData.find(item => item.type === 'income');
-      const expenseEntry = monthData.find(item => item.type === 'expense');
-
-      return {
-        label: getMonthName(index),
-        income: incomeEntry ? parseFloat(incomeEntry.totalamount) : 0,
-        expense: expenseEntry ? parseFloat(expenseEntry.totalamount) : 0
-      };
-    });
+    const monthlyChartData = result.rows;
+//     const data = new Array(12).fill().map((_, index) => {
+//       const monthNum = index + 1;
+//       const monthData = result.rows.filter(item => parseInt(item.month) === monthNum);
+// 
+//       const incomeEntry = monthData.find(item => item.type === 'income');
+//       const expenseEntry = monthData.find(item => item.type === 'expense');
+// 
+//       return {
+//         label: getMonthName(index),
+//         income: incomeEntry ? parseFloat(incomeEntry.totalamount) : 0,
+//         expense: expenseEntry ? parseFloat(expenseEntry.totalamount) : 0
+//       };
+//     });
 
     // fetch the last 5 transactions
 
@@ -158,7 +218,7 @@ export const getDashboardInformation = async (req, res) => {
     });
 
     const lastAccounts = lastAccountResult.rows;
-
+    console.log('Monthly chart data:', monthlyChartData);
     res.status(200).json({
       status: 'success',
       totalIncome,
@@ -166,7 +226,8 @@ export const getDashboardInformation = async (req, res) => {
       availableBalance,
       lastTransactions,
       lastAccounts,
-      chartData: data,
+      chartData: monthlyChartData,
+      dailyChartData: dailyData
     });
 
 
@@ -369,7 +430,7 @@ export const addTransaction = async (req, res) => {
 
       // Insert a transaction record for the transfer
 
-      const description = `Transfer (${fromAccount.account_name}) to (${toAccount.account_name})`;
+      const description = `Transfer from (${fromAccount.account_name}) to (${toAccount.account_name})`;
 
       await pool.query({
         text: `
@@ -386,7 +447,7 @@ export const addTransaction = async (req, res) => {
         ],
       });
 
-      const description2 = `Received (${fromAccount.account_name}) from (${toAccount.account_name})`;
+      const description2 = `Received in (${fromAccount.account_name}) from (${toAccount.account_name})`;
 
       await pool.query({
         text: `
