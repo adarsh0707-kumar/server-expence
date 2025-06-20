@@ -179,7 +179,7 @@ export const getDashboardInformation = async (req, res) => {
 
     
     // organize the data by month and type
-    // const monthlyChartData = result.rows;
+    const monthlyChartData = result.rows;
 //     const data = new Array(12).fill().map((_, index) => {
 //       const monthNum = index + 1;
 //       const monthData = result.rows.filter(item => parseInt(item.month) === monthNum);
@@ -218,7 +218,7 @@ export const getDashboardInformation = async (req, res) => {
     });
 
     const lastAccounts = lastAccountResult.rows;
-    console.log('Monthly chart data:', monthlyChartData);
+    
     res.status(200).json({
       status: 'success',
       totalIncome,
