@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 8000
 
 // ✅ Fixed CORS setup
 app.use(cors({
-  origin: 'http://localhost:5173', // Your Vite frontend
+  origin: ['http://localhost:5173',
+    'https://expense-tracker-ten-drab.vercel.app', // Your deployed frontend URL
+  ], // Your Vite frontend
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
