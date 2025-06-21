@@ -60,12 +60,12 @@ export const updateUser = async (req, res) => {
     }
     
     // Validate required fields
-    if (!firstName) {
-      return res.status(400).json({
-        status: "failed",
-        message: "First name is required",
-      });
-    }
+    // if (!firstName) {
+    //   return res.status(400).json({
+    //     status: "failed",
+    //     message: "First name is required",
+    //   });
+    // }
 
     const userExists = await pool.query({
       text: `SELECT * FROM tbluser WHERE id = $1`,
