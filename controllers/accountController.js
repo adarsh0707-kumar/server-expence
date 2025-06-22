@@ -38,8 +38,7 @@ export const createAccount = async (req, res) => {
 
     const { name, amount, account_number } = req.body;
     
-    console.log('createAccount received body:', req.body);
-    console.log('User object:', req.body.user);
+    
     const accountExistsQuery = {
       text: `SELECT * FROM tblaccount WHERE user_id = $1 AND account_name = $2`,
       values: [userId, name],
