@@ -163,7 +163,7 @@ export const deleteAccount = async (req, res) => {
   const user = req.body.user; // ✅ CORRECTED from req.user.userId
 
   console.log("id", id)
-  console.log("user", user)
+  console.log("user", user.userId)
 
   try {
     const result = await pool.query({
