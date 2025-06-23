@@ -160,7 +160,7 @@ export const addMoneyToAccount = async (req, res) => {
 
 export const deleteAccount = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user?.id; // ✅ CORRECTED from req.user.userId
+  const user = req.body.user; // ✅ CORRECTED from req.user.userId
 
   console.log("id", id)
   console.log("userId", userId)
