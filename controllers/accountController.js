@@ -168,7 +168,7 @@ export const deleteAccount = async (req, res) => {
   try {
     const result = await pool.query({
       text: `DELETE FROM tblaccount WHERE id = $1 AND user_id = $2 RETURNING *`,
-      values: [id, userId]
+      values: [id, user.userId]
     });
 
     if (result.rowCount === 0) {
