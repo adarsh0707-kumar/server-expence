@@ -160,15 +160,13 @@ export const addMoneyToAccount = async (req, res) => {
 
 export const deleteAccount = async (req, res) => {
   const { id } = req.params;
-  const user = req.body.user; // ✅ CORRECTED from req.user.userId
+  const userId = req.body.user.userId; // ✅ CORRECTED from req.user.userId
 
-  console.log("id", id)
-  console.log("user", user.userId)
 
   try {
     const result = await pool.query({
       text: `DELETE FROM tblaccount WHERE id = $1 AND user_id = $2 RETURNING *`,
-      values: [id, user.userId]
+      values: [id, userId]
     });
 
     if (result.rowCount === 0) {
