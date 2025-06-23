@@ -162,6 +162,9 @@ export const deleteAccount = async (req, res) => {
   const { id } = req.params;
   const userId = req.user?.id; // ✅ CORRECTED from req.user.userId
 
+  console.log("id", id)
+  console.log("userId", userId)
+
   try {
     const result = await pool.query({
       text: `DELETE FROM tblaccount WHERE id = $1 AND user_id = $2 RETURNING *`,
