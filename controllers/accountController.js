@@ -159,32 +159,33 @@ export const addMoneyToAccount = async (req, res) => {
 // In your controller (accountController.js)
 
 export const deleteAccount = async (req, res) => {
-  const { id } = req.params
-  const userId = req.user?.userId // <-- get from authMiddleware
+  const { id } = req.params;
+  const userId = req.user?.id; // ✅ CORRECTED from req.user.userId
 
   try {
     const result = await pool.query({
       text: `DELETE FROM tblaccount WHERE id = $1 AND user_id = $2 RETURNING *`,
       values: [id, userId]
-    })
+    });
 
     if (result.rowCount === 0) {
       return res.status(404).json({
         status: 'Failed',
         message: 'Account not found or not yours'
-      })
+      });
     }
 
     res.status(200).json({
       status: 'Success',
       message: 'Account deleted successfully',
       data: result.rows[0]
-    })
+    });
   } catch (err) {
-    console.error(err)
+    console.error(err);
     res.status(500).json({
       status: 'Failed',
       message: err.message || 'Error deleting account'
-    })
+    });
   }
-}
+};
+
